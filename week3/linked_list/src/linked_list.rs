@@ -106,3 +106,53 @@ impl<T> PartialEq for LinkedList<T> where T: PartialEq {
         }
     }
 }
+
+impl<T> IntoIterator for LinkedList<T> {
+    type Item = T;
+    type IntoIter = LinkedListIterator<Self::Item>;
+    fn into_iter(mut self) -> Self::IntoIter {
+        Self::IntoIter {
+            current: self.head.take(),
+        }
+    }
+}
+
+pub struct LinkedListIterator<T> {
+    current: Option<Box<Node<T>>>,
+}
+
+impl<T> Iterator for LinkedListIterator<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.current.take() {
+            self.current = node.next;
+            Some(node.value)
+        } else {
+            None
+        }
+    }
+}
+
+pub struct LinkedListIter<'a, T> {
+    current: &'a Option<Box<Node<T>>>,
+}
+
+impl<'a, T> IntoIterator for &'a LinkedList<T> {
+    type Item = &'a T;
+    type IntoIter = LinkedListIter<'a, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        Self::IntoIter { current: &self.head }
+    }
+}
+
+impl<'a, T> Iterator for LinkedListIter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(node) = self.current {
+            self.current = &node.next;
+            Some(&node.value)
+        } else {
+            None
+        }
+    }
+}

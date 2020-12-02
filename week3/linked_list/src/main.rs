@@ -17,6 +17,16 @@ fn main() {
 
     let cloned = list.clone();
     assert!(list == cloned);
+    println!("for in &cloned");
+    for element in &cloned {
+        println!("{}", element);
+    }
+    println!("for in cloned");
+    for element in cloned {
+        println!("{}", element);
+    }
+    // It it moved!
+    //println!("{}", cloned);
 
     // If you implement iterator trait:
     //for val in &list {
