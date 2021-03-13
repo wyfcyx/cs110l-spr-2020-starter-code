@@ -72,11 +72,47 @@ fn main() {
     let start = Instant::now();
 
     // TODO: call get_input_numbers() and store a queue of numbers to factor
+    let numbers = Arc::new(Mutex::new(get_input_numbers()));
 
     // TODO: spawn `num_threads` threads, each of which pops numbers off the queue and calls
     // factor_number() until the queue is empty
+    let mut threads = Vec::new();
+    for i in 0..num_threads {
+        let numbers_copy = Arc::clone(&numbers);
+        threads.push(thread::spawn(move || {
+            /* wrong1: it is serial!
+            while let Some(number) = numbers_copy.lock().unwrap().pop_front() {
+                print!("[{}] ", i);
+                factor_number(number);
+            }
+            */
+            /* wrong2: it is serial!
+            loop {
+                if let Some(number) = numbers_copy.lock().unwrap().pop_front() {
+                    print!("[thread {}] ", i);
+                    factor_number(number);
+                } else {
+                    break;
+                }
+            }
+            */
+            loop {
+                let mut numbers = numbers_copy.lock().unwrap();
+                if let Some(number) = numbers.pop_back() {
+                    drop(numbers);
+                    print!("[{}] ", i);
+                    factor_number(number);
+                } else {
+                    break;
+                }
+            }
+        }));
+    }
 
     // TODO: join all the threads you created
+    for thread in threads.into_iter() {
+        thread.join().unwrap();
+    }
 
     println!("Total execution time: {:?}", start.elapsed());
 }
